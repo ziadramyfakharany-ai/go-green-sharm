@@ -1,3 +1,6 @@
+import { API_URL } from '../api'; // في ActivityDetails.jsx و AdminDashboard.jsx
+import { API_URL } from './api';  // في App.jsx
+
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Clock, MapPin, CheckCircle2, Calendar, Users, Sparkles, Backpack, Star, Globe, Send } from 'lucide-react';
 

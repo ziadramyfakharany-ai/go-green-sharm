@@ -1,3 +1,7 @@
+import { API_URL } from '../api'; // في ActivityDetails.jsx و AdminDashboard.jsx
+import { API_URL } from './api';  // في App.jsx
+
+
 import { useEffect, useState } from 'react';
 import { Leaf, MapPin, Clock, ChevronDown, Compass, ShieldCheck, Lock, X, RefreshCw, Star, User, Calendar, LogOut, CheckCircle } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
