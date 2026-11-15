@@ -42,7 +42,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
   const loadReviews = async () => {
     if (!activity?._id) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/reviews?activityId=${activity._id}`);
+      const res = await fetch(`https://go-green-sharm-api.vercel.app/api/reviews?activityId=${activity._id}`);
       if (res.ok) {
         const data = await res.json();
         setReviews(Array.isArray(data) ? data : []);
@@ -60,7 +60,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5000/api/reviews', {
+    const res = await fetch('https://go-green-sharm-api.vercel.app/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -103,7 +103,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5000/api/bookings', {
+    const res = await fetch('https://go-green-sharm-api.vercel.app/api/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

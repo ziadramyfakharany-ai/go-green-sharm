@@ -23,9 +23,9 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
 
   const loadData = async () => {
     const [bRes, aRes, rRes] = await Promise.all([
-      fetch('http://localhost:5000/api/bookings', { headers: authHeaders }),
-      fetch('http://localhost:5000/api/spots'),
-      fetch('http://localhost:5000/api/reviews')
+      fetch('https://go-green-sharm-api.vercel.app/api/bookings', { headers: authHeaders }),
+      fetch('https://go-green-sharm-api.vercel.app/api/spots'),
+      fetch('https://go-green-sharm-api.vercel.app/api/reviews')
     ]);
     if (bRes.ok) setBookings(await bRes.json());
     if (aRes.ok) setActivities(await aRes.json());
@@ -37,7 +37,7 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
   }, []);
 
   const confirmBooking = async (id) => {
-    await fetch(`http://localhost:5000/api/bookings/${id}`, {
+    await fetch(`https://go-green-sharm-api.vercel.app/api/bookings/${id}`, {
       method: 'PATCH',
       headers: authHeaders,
       body: JSON.stringify({ status: 'Confirmed' })
@@ -47,7 +47,7 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
 
   const handleAddActivity = async (e) => {
     e.preventDefault();
-    await fetch('http://localhost:5000/api/spots', {
+    await fetch('https://go-green-sharm-api.vercel.app/api/spots', {
       method: 'POST',
       headers: authHeaders,
       body: JSON.stringify(newAct)
@@ -58,7 +58,7 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
   };
 
   const handleDeleteActivity = async (id) => {
-    await fetch(`http://localhost:5000/api/spots/${id}`, {
+    await fetch(`https://go-green-sharm-api.vercel.app/api/spots/${id}`, {
       method: 'DELETE',
       headers: authHeaders
     });
@@ -68,7 +68,7 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
 
   const handleDeleteReview = async (id) => {
     if (!window.confirm('Are you sure you want to delete this review?')) return;
-    const res = await fetch(`http://localhost:5000/api/reviews/${id}`, {
+    const res = await fetch(`https://go-green-sharm-api.vercel.app/api/reviews/${id}`, {
       method: 'DELETE',
       headers: authHeaders
     });

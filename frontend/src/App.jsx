@@ -35,8 +35,8 @@ export default function App() {
   const fetchActivities = async () => {
     try {
       const [spotsRes, revRes] = await Promise.all([
-        fetch('http://localhost:5000/api/spots'),
-        fetch('http://localhost:5000/api/reviews')
+        fetch('https://go-green-sharm-api.vercel.app/api/spots'),
+        fetch('https://go-green-sharm-api.vercel.app/api/reviews')
       ]);
       if (spotsRes.ok) {
         const spotsData = await spotsRes.json();
@@ -60,7 +60,7 @@ export default function App() {
     setAuthError('');
     const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
     try {
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const res = await fetch(`https://go-green-sharm-api.vercel.app${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(authForm)
@@ -92,7 +92,7 @@ export default function App() {
   const openMyBookings = async () => {
     setShowMyBookings(true);
     try {
-      const res = await fetch('http://localhost:5000/api/my-bookings', {
+      const res = await fetch('https://go-green-sharm-api.vercel.app/api/my-bookings', {
         headers: { Authorization: `Bearer ${userToken}` }
       });
       if (res.ok) {
@@ -104,7 +104,7 @@ export default function App() {
   };
 
   const handleSeed = async () => {
-    await fetch('http://localhost:5000/api/seed', { method: 'POST' });
+    await fetch('https://go-green-sharm-api.vercel.app/api/seed', { method: 'POST' });
     fetchActivities();
   };
 
@@ -122,7 +122,7 @@ export default function App() {
     e.preventDefault();
     setLoginError('');
     try {
-      const res = await fetch('http://localhost:5000/api/admin/login', {
+      const res = await fetch('https://go-green-sharm-api.vercel.app/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: passwordInput })
