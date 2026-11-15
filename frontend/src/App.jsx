@@ -1,4 +1,3 @@
-import { API_URL } from '../api'; // في ActivityDetails.jsx و AdminDashboard.jsx
 import { API_URL } from './api';  // في App.jsx
 
 

@@ -1,5 +1,4 @@
-import { API_URL } from '../api'; // في ActivityDetails.jsx و AdminDashboard.jsx
-import { API_URL } from './api';  // في App.jsx
+import { API_URL } from './api'; // في ActivityDetails.jsx و AdminDashboard.jsx
 import { useEffect, useState } from 'react';
 import { CheckCircle, Clock, Plus, Trash2, ArrowLeft, DollarSign, Users, Calendar, LogOut, Backpack, Sparkles, MessageSquare, Star } from 'lucide-react';
 
