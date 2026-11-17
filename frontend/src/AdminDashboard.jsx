@@ -1,11 +1,12 @@
-import { API_URL } from './api'; // في ActivityDetails.jsx و AdminDashboard.jsx
 import { useEffect, useState } from 'react';
-import { CheckCircle, Clock, Plus, Trash2, ArrowLeft, DollarSign, Users, Calendar, LogOut, Backpack, Sparkles, MessageSquare, Star } from 'lucide-react';
+import { API_URL, getAdminHeaders, handleAuthFailure } from './api';
+import { CheckCircle, Clock, Plus, Trash2, ArrowLeft, DollarSign, Users, Calendar, LogOut, Backpack, Sparkles, MessageSquare, Star, RefreshCw } from 'lucide-react';
 
-export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefreshActivities }) {
+export default function AdminDashboard({ onBack, onLogout, onRefreshActivities }) {
   const [bookings, setBookings] = useState([]);
   const [activities, setActivities] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [seeding, setSeeding] = useState(false);
   const [newAct, setNewAct] = useState({
     name: '',
     category: 'Safari & Desert',
@@ -16,17 +17,13 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
     image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80'
   });
 
-  const authHeaders = {
-    'Content-Type': 'application/json',
-    'x-admin-password': adminPassword
-  };
-
   const loadData = async () => {
     const [bRes, aRes, rRes] = await Promise.all([
-      fetch('https://go-green-sharm-api.vercel.app/api/bookings', { headers: authHeaders }),
-      fetch('https://go-green-sharm-api.vercel.app/api/spots'),
-      fetch('https://go-green-sharm-api.vercel.app/api/reviews')
+      fetch(`${API_URL}/api/bookings`, { headers: getAdminHeaders() }),
+      fetch(`${API_URL}/api/spots`),
+      fetch(`${API_URL}/api/reviews`)
     ]);
+    if (handleAuthFailure(bRes, onLogout)) return;
     if (bRes.ok) setBookings(await bRes.json());
     if (aRes.ok) setActivities(await aRes.json());
     if (rRes.ok) setReviews(await rRes.json());
@@ -37,41 +34,64 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
   }, []);
 
   const confirmBooking = async (id) => {
-    await fetch(`https://go-green-sharm-api.vercel.app/api/bookings/${id}`, {
+    const res = await fetch(`${API_URL}/api/bookings/${id}`, {
       method: 'PATCH',
-      headers: authHeaders,
+      headers: getAdminHeaders(),
       body: JSON.stringify({ status: 'Confirmed' })
     });
+    if (handleAuthFailure(res, onLogout)) return;
     loadData();
+  };
+
+  const handleSeedActivities = async () => {
+    if (!window.confirm('This will reset the catalog to the default 9 Sharm Go Green activities. Continue?')) return;
+    setSeeding(true);
+    try {
+      const res = await fetch(`${API_URL}/api/seed`, {
+        method: 'POST',
+        headers: getAdminHeaders()
+      });
+      if (handleAuthFailure(res, onLogout)) return;
+      if (res.ok) {
+        await loadData();
+        onRefreshActivities();
+      }
+    } finally {
+      setSeeding(false);
+    }
   };
 
   const handleAddActivity = async (e) => {
     e.preventDefault();
-    await fetch('https://go-green-sharm-api.vercel.app/api/spots', {
+    const res = await fetch(`${API_URL}/api/spots`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: getAdminHeaders(),
       body: JSON.stringify(newAct)
     });
+    if (handleAuthFailure(res, onLogout)) return;
     setNewAct({ ...newAct, name: '', description: '' });
     loadData();
     onRefreshActivities();
   };
 
   const handleDeleteActivity = async (id) => {
-    await fetch(`https://go-green-sharm-api.vercel.app/api/spots/${id}`, {
+    if (!window.confirm('Delete this activity?')) return;
+    const res = await fetch(`${API_URL}/api/spots/${id}`, {
       method: 'DELETE',
-      headers: authHeaders
+      headers: getAdminHeaders()
     });
+    if (handleAuthFailure(res, onLogout)) return;
     loadData();
     onRefreshActivities();
   };
 
   const handleDeleteReview = async (id) => {
     if (!window.confirm('Are you sure you want to delete this review?')) return;
-    const res = await fetch(`https://go-green-sharm-api.vercel.app/api/reviews/${id}`, {
+    const res = await fetch(`${API_URL}/api/reviews/${id}`, {
       method: 'DELETE',
-      headers: authHeaders
+      headers: getAdminHeaders()
     });
+    if (handleAuthFailure(res, onLogout)) return;
     if (res.ok) {
       loadData();
       onRefreshActivities();
@@ -89,7 +109,15 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
             <span className="text-xs font-bold text-orange-500 uppercase tracking-wider">Sharm Go Green Control Panel</span>
             <h1 className="text-3xl font-extrabold text-green-800">Admin Dashboard</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleSeedActivities}
+              disabled={seeding}
+              className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold px-4 py-2.5 rounded-full text-sm transition cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${seeding ? 'animate-spin' : ''}`} />
+              {seeding ? 'Loading...' : 'Restore Default 9 Tours'}
+            </button>
             <button
               onClick={onBack}
               className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-full text-sm transition cursor-pointer"
@@ -244,6 +272,7 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
                 <input
                   type="number"
                   required
+                  min="1"
                   placeholder="Price ($)"
                   value={newAct.price}
                   onChange={(e) => setNewAct({ ...newAct, price: Number(e.target.value) })}
@@ -254,6 +283,7 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
+                required
                 placeholder="Duration (e.g., 3 Hours)"
                 value={newAct.duration}
                 onChange={(e) => setNewAct({ ...newAct, duration: e.target.value })}
@@ -261,6 +291,7 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
               />
               <input
                 type="text"
+                required
                 placeholder="Location"
                 value={newAct.location}
                 onChange={(e) => setNewAct({ ...newAct, location: e.target.value })}
@@ -268,7 +299,8 @@ export default function AdminDashboard({ adminPassword, onBack, onLogout, onRefr
               />
             </div>
             <input
-              type="text"
+              type="url"
+              required
               placeholder="Image URL"
               value={newAct.image}
               onChange={(e) => setNewAct({ ...newAct, image: e.target.value })}

@@ -1,14 +1,12 @@
-import { API_URL } from './api';  // في App.jsx
-
-
 import { useEffect, useState } from 'react';
-import { Leaf, MapPin, Clock, ChevronDown, Compass, ShieldCheck, Lock, X, RefreshCw, Star, User, Calendar, LogOut, CheckCircle } from 'lucide-react';
+import { API_URL } from './api';
+import { Leaf, MapPin, Clock, ChevronDown, Compass, ShieldCheck, Lock, X, Star, User, Calendar, LogOut, CheckCircle } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
 import ActivityDetails from './ActivityDetails';
 
 export default function App() {
   const [adminMode, setAdminMode] = useState(false);
-  const [adminPassword, setAdminPassword] = useState(() => sessionStorage.getItem('adminPass') || '');
+  const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('sharm_admin_token') || '');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -16,11 +14,15 @@ export default function App() {
   // User Account States
   const [userToken, setUserToken] = useState(() => localStorage.getItem('userToken') || '');
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('currentUser');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('currentUser');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+  const [authMode, setAuthMode] = useState('login');
   const [authForm, setAuthForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [authError, setAuthError] = useState('');
   const [showMyBookings, setShowMyBookings] = useState(false);
@@ -35,8 +37,8 @@ export default function App() {
   const fetchActivities = async () => {
     try {
       const [spotsRes, revRes] = await Promise.all([
-        fetch('https://go-green-sharm-api.vercel.app/api/spots'),
-        fetch('https://go-green-sharm-api.vercel.app/api/reviews')
+        fetch(`${API_URL}/api/spots`),
+        fetch(`${API_URL}/api/reviews`)
       ]);
       if (spotsRes.ok) {
         const spotsData = await spotsRes.json();
@@ -60,7 +62,7 @@ export default function App() {
     setAuthError('');
     const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
     try {
-      const res = await fetch(`https://go-green-sharm-api.vercel.app${endpoint}`, {
+      const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(authForm)
@@ -74,7 +76,7 @@ export default function App() {
         setShowAuthModal(false);
         setAuthForm({ name: '', email: '', phone: '', password: '' });
       } else {
-        setAuthError(data.error || 'Authentication failed');
+        setAuthError(res.status === 429 ? 'Too many attempts. Please wait 15 minutes.' : (data.error || 'Authentication failed'));
       }
     } catch {
       setAuthError('Server connection error');
@@ -92,9 +94,13 @@ export default function App() {
   const openMyBookings = async () => {
     setShowMyBookings(true);
     try {
-      const res = await fetch('https://go-green-sharm-api.vercel.app/api/my-bookings', {
+      const res = await fetch(`${API_URL}/api/my-bookings`, {
         headers: { Authorization: `Bearer ${userToken}` }
       });
+      if (res.status === 401) {
+        handleUserLogout();
+        return;
+      }
       if (res.ok) {
         setMyBookings(await res.json());
       }
@@ -103,13 +109,8 @@ export default function App() {
     }
   };
 
-  const handleSeed = async () => {
-    await fetch('https://go-green-sharm-api.vercel.app/api/seed', { method: 'POST' });
-    fetchActivities();
-  };
-
   const handleAdminClick = () => {
-    if (adminPassword) {
+    if (adminToken) {
       setAdminMode(true);
     } else {
       setLoginError('');
@@ -122,18 +123,22 @@ export default function App() {
     e.preventDefault();
     setLoginError('');
     try {
-      const res = await fetch('https://go-green-sharm-api.vercel.app/api/admin/login', {
+      const res = await fetch(`${API_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: passwordInput })
       });
-      if (res.ok) {
-        sessionStorage.setItem('adminPass', passwordInput);
-        setAdminPassword(passwordInput);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.token) {
+        sessionStorage.setItem('sharm_admin_token', data.token);
+        setAdminToken(data.token);
+        setPasswordInput('');
         setShowLoginModal(false);
         setAdminMode(true);
+      } else if (res.status === 429) {
+        setLoginError('Too many failed attempts. Please wait 15 minutes.');
       } else {
-        setLoginError('Incorrect admin password!');
+        setLoginError(data.error || 'Incorrect admin password!');
       }
     } catch {
       setLoginError('Server connection error');
@@ -141,8 +146,8 @@ export default function App() {
   };
 
   const handleAdminLogout = () => {
-    sessionStorage.removeItem('adminPass');
-    setAdminPassword('');
+    sessionStorage.removeItem('sharm_admin_token');
+    setAdminToken('');
     setAdminMode(false);
   };
 
@@ -157,10 +162,9 @@ export default function App() {
   const categories = ['All', 'Safari & Desert', 'Water Sports', 'Eco Rides'];
   const filtered = filter === 'All' ? activities : activities.filter((a) => a.category === filter);
 
-  if (adminMode && adminPassword) {
+  if (adminMode && adminToken) {
     return (
       <AdminDashboard
-        adminPassword={adminPassword}
         onBack={() => setAdminMode(false)}
         onLogout={handleAdminLogout}
         onRefreshActivities={fetchActivities}
@@ -335,25 +339,18 @@ export default function App() {
                 {cat}
               </button>
             ))}
-            <button
-              onClick={handleSeed}
-              title="Refresh / Load all 9 activities"
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold bg-orange-50 text-orange-600 hover:bg-orange-100 transition cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" /> Sync All 9 Tours
-            </button>
           </div>
         </div>
 
         {activities.length === 0 ? (
           <div className="text-center py-12 bg-slate-50 rounded-3xl border-2 border-dashed border-green-200 space-y-4">
             <Compass className="w-12 h-12 text-green-600 mx-auto" />
-            <h3 className="text-xl font-bold">Load Your 9 Sharm Go Green Activities</h3>
+            <h3 className="text-xl font-bold">Loading Sharm Go Green Activities...</h3>
             <button
-              onClick={handleSeed}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-full cursor-pointer"
+              onClick={handleAdminClick}
+              className="bg-green-700 hover:bg-green-800 text-white font-bold px-6 py-3 rounded-full cursor-pointer text-sm"
             >
-              + Load All 9 Activities & Prices
+              Admin Login to Initialize Catalog
             </button>
           </div>
         ) : (
@@ -524,6 +521,7 @@ export default function App() {
                   <input
                     type="text"
                     required
+                    maxLength={80}
                     placeholder="Full Name"
                     value={authForm.name}
                     onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })}
@@ -531,6 +529,7 @@ export default function App() {
                   />
                   <input
                     type="text"
+                    maxLength={30}
                     placeholder="WhatsApp / Phone Number"
                     value={authForm.phone}
                     onChange={(e) => setAuthForm({ ...authForm, phone: e.target.value })}
@@ -549,7 +548,8 @@ export default function App() {
               <input
                 type="password"
                 required
-                placeholder="Password"
+                minLength={8}
+                placeholder="Password (min. 8 characters)"
                 value={authForm.password}
                 onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm"

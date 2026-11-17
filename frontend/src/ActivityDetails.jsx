@@ -1,6 +1,5 @@
-import { API_URL } from './api'; // في ActivityDetails.jsx و AdminDashboard.jsx
-
 import { useEffect, useState } from 'react';
+import { API_URL } from './api';
 import { ArrowLeft, Clock, MapPin, CheckCircle2, Calendar, Users, Sparkles, Backpack, Star, Globe, Send } from 'lucide-react';
 
 export default function ActivityDetails({ activity, onBack, onReviewAdded, currentUser }) {
@@ -14,6 +13,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
     notes: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [bookingError, setBookingError] = useState('');
 
   // Reviews State
   const [reviews, setReviews] = useState([]);
@@ -24,6 +24,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
     comment: ''
   });
   const [reviewSent, setReviewSent] = useState(false);
+  const [reviewError, setReviewError] = useState('');
 
   useEffect(() => {
     if (currentUser) {
@@ -42,7 +43,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
   const loadReviews = async () => {
     if (!activity?._id) return;
     try {
-      const res = await fetch(`https://go-green-sharm-api.vercel.app/api/reviews?activityId=${activity._id}`);
+      const res = await fetch(`${API_URL}/api/reviews?activityId=${encodeURIComponent(activity._id)}`);
       if (res.ok) {
         const data = await res.json();
         setReviews(Array.isArray(data) ? data : []);
@@ -60,21 +61,31 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('https://go-green-sharm-api.vercel.app/api/reviews', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        activityId: activity._id,
-        activityName: activity.name,
-        ...reviewForm
-      })
-    });
-    if (res.ok) {
-      setReviewForm({ reviewerName: currentUser?.name || '', country: '', rating: 5, comment: '' });
-      setReviewSent(true);
-      loadReviews();
-      if (onReviewAdded) onReviewAdded();
-      setTimeout(() => setReviewSent(false), 4000);
+    setReviewError('');
+    try {
+      const res = await fetch(`${API_URL}/api/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          activityId: activity._id,
+          reviewerName: reviewForm.reviewerName,
+          country: reviewForm.country,
+          rating: reviewForm.rating,
+          comment: reviewForm.comment
+        })
+      });
+      if (res.ok) {
+        setReviewForm({ reviewerName: currentUser?.name || '', country: '', rating: 5, comment: '' });
+        setReviewSent(true);
+        loadReviews();
+        if (onReviewAdded) onReviewAdded();
+        setTimeout(() => setReviewSent(false), 4000);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setReviewError(res.status === 429 ? 'Too many reviews submitted. Please wait.' : (data.error || 'Could not post review.'));
+      }
+    } catch {
+      setReviewError('Connection error. Please try again.');
     }
   };
 
@@ -103,23 +114,36 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('https://go-green-sharm-api.vercel.app/api/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: currentUser?.id || null,
-        activityName: activity.name,
-        customerName: form.customerName,
-        contactInfo: form.contactInfo,
-        date: form.date,
-        guests: form.guests,
-        selectedOption: currentPkg.label,
-        selectedEquipment: selectedEquip.map((e) => `${e.name} (+$${e.price})`),
-        notes: form.notes,
-        totalPrice
-      })
-    });
-    if (res.ok) setSubmitted(true);
+    setBookingError('');
+    const userToken = localStorage.getItem('userToken');
+
+    try {
+      const res = await fetch(`${API_URL}/api/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(userToken ? { Authorization: `Bearer ${userToken}` } : {})
+        },
+        body: JSON.stringify({
+          activityName: activity.name,
+          customerName: form.customerName,
+          contactInfo: form.contactInfo,
+          date: form.date,
+          guests: form.guests,
+          selectedOption: currentPkg.label,
+          selectedEquipment: selectedEquip.map((e) => e.name),
+          notes: form.notes
+        })
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setBookingError(res.status === 429 ? 'Too many booking attempts. Please wait 15 minutes.' : (data.error || 'Booking failed.'));
+      }
+    } catch {
+      setBookingError('Server connection error. Please try again.');
+    }
   };
 
   return (
@@ -166,7 +190,6 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
 
         {/* Details & Customizer Grid */}
         <div className="grid lg:grid-cols-3 gap-8 mt-8">
-          {/* Left 2 Columns */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 space-y-4">
               <h2 className="text-2xl font-extrabold text-green-800">About This Experience</h2>
@@ -262,13 +285,13 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                 </div>
               </div>
 
-              {/* Write a Review Form */}
               <form onSubmit={handleReviewSubmit} className="bg-slate-50 p-5 rounded-2xl space-y-3 border border-slate-200/70">
                 <p className="text-sm font-extrabold text-green-800">Share Your Experience</p>
                 <div className="grid sm:grid-cols-3 gap-3">
                   <input
                     type="text"
                     required
+                    maxLength={80}
                     placeholder="Your Name"
                     value={reviewForm.reviewerName}
                     onChange={(e) => setReviewForm({ ...reviewForm, reviewerName: e.target.value })}
@@ -278,6 +301,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                     <Globe className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     <input
                       type="text"
+                      maxLength={60}
                       placeholder="Country (e.g., UK, Italy)"
                       value={reviewForm.country}
                       onChange={(e) => setReviewForm({ ...reviewForm, country: e.target.value })}
@@ -308,6 +332,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                 <textarea
                   required
                   rows="2"
+                  maxLength={1000}
                   placeholder="Tell other travelers about the guides, equipment, and adventure..."
                   value={reviewForm.comment}
                   onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
@@ -315,7 +340,9 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                 />
 
                 <div className="flex items-center justify-between">
-                  {reviewSent ? (
+                  {reviewError ? (
+                    <span className="text-xs font-bold text-red-600">{reviewError}</span>
+                  ) : reviewSent ? (
                     <span className="text-xs font-bold text-green-700">✅ Thank you! Your review is live.</span>
                   ) : (
                     <span className="text-xs text-slate-400">Your review helps fellow eco-travelers.</span>
@@ -329,7 +356,6 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                 </div>
               </form>
 
-              {/* Reviews List */}
               {safeReviews.length === 0 ? (
                 <p className="text-sm text-slate-500 text-center py-4">
                   No reviews yet for {activity.name}. Be the first to share your adventure!
@@ -394,6 +420,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                   <input
                     type="text"
                     required
+                    maxLength={100}
                     placeholder="John Doe"
                     value={form.customerName}
                     onChange={(e) => setForm({ ...form, customerName: e.target.value })}
@@ -406,6 +433,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                   <input
                     type="text"
                     required
+                    maxLength={150}
                     placeholder="+20 100 000 0000"
                     value={form.contactInfo}
                     onChange={(e) => setForm({ ...form, contactInfo: e.target.value })}
@@ -433,7 +461,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                     <input
                       type="number"
                       min="1"
-                      max="20"
+                      max="50"
                       required
                       value={form.guests}
                       onChange={(e) => setForm({ ...form, guests: Number(e.target.value) })}
@@ -446,6 +474,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                   <label className="block text-xs font-bold text-slate-700 mb-1">Hotel Pickup / Notes (Optional)</label>
                   <input
                     type="text"
+                    maxLength={500}
                     placeholder="Hotel name, room number..."
                     value={form.notes}
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -467,6 +496,8 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                     <span className="text-2xl font-extrabold text-green-700">${totalPrice}</span>
                   </div>
                 </div>
+
+                {bookingError && <p className="text-xs font-bold text-red-600">{bookingError}</p>}
 
                 <button
                   type="submit"
