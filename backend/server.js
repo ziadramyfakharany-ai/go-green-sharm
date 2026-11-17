@@ -48,7 +48,11 @@ app.use(cors({
 
 // 3. Body Parser with size limit & NoSQL Injection Sanitization
 app.use(express.json({ limit: '50kb' }));
-app.use(mongoSanitize());
+app.use((req, _res, next) => {
+  if (req.body) mongoSanitize.sanitize(req.body);
+  if (req.params) mongoSanitize.sanitize(req.params);
+  next();
+});
 
 // 4. Rate Limiters
 const authLimiter = rateLimit({
