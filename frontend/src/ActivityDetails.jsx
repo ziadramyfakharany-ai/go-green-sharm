@@ -150,18 +150,18 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20">
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-3">
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-sm font-bold text-green-700 hover:text-orange-500 transition cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to All Activities
+            <ArrowLeft className="w-4 h-4 shrink-0" /> Back to All Activities
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <span className="flex items-center gap-1 text-xs font-extrabold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
-              <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" /> {avgRating} ({safeReviews.length} reviews)
+              <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0" /> {avgRating} ({safeReviews.length})
             </span>
-            <span className="text-xs font-extrabold uppercase tracking-wider bg-green-100 text-green-800 px-3.5 py-1 rounded-full">
+            <span className="hidden sm:inline-block text-xs font-extrabold uppercase tracking-wider bg-green-100 text-green-800 px-3.5 py-1 rounded-full">
               {activity.category}
             </span>
           </div>
@@ -441,22 +441,23 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-green-600" /> Date
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="min-w-0">
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-green-600 shrink-0" /> Date
                     </label>
                     <input
                       type="date"
                       required
+                      min={new Date().toISOString().split('T')[0]}
                       value={form.date}
                       onChange={(e) => setForm({ ...form, date: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                      className="w-full min-w-0 max-w-full appearance-none bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-green-600" /> Guests
+                  <div className="min-w-0">
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1.5">
+                      <Users className="w-3.5 h-3.5 text-green-600 shrink-0" /> Guests
                     </label>
                     <input
                       type="number"
@@ -465,7 +466,7 @@ export default function ActivityDetails({ activity, onBack, onReviewAdded, curre
                       required
                       value={form.guests}
                       onChange={(e) => setForm({ ...form, guests: Number(e.target.value) })}
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm"
+                      className="w-full min-w-0 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800"
                     />
                   </div>
                 </div>
