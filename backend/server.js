@@ -385,7 +385,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Child Seat Attachment", price: 5 },
           { name: "GoPro Handlebar Mount", price: 8 }
         ],
-        image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=800&q=80"
+        image: "https://go-green-sharm.vercel.app/activities/electra-bicycles.jpg"
       },
       {
         name: "Kite Trike",
