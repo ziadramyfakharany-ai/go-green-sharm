@@ -677,48 +677,55 @@ export default function App() {
         )}
       </section>
 
-      {/* About / Why Sharm Go Green - Rich Emerald Accent Band */}
-      <section id="about" className="bg-emerald-950 text-white py-20 px-6">
-        <div className="max-w-6xl mx-auto space-y-12">
+      {/* About / Why Sharm Go Green - Transparent Image Background + Glass Cards */}
+      <section id="about" className="relative bg-emerald-950 text-white py-24 px-6 overflow-hidden">
+        <img
+          src="/hero-sea.jpeg"
+          alt="Sharm El Sheikh Nature"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-35 scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/85 via-emerald-900/75 to-black/80 backdrop-blur-[2px]" />
+
+        <div className="relative z-10 max-w-6xl mx-auto space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="inline-block bg-orange-500/20 border border-orange-400/40 text-orange-300 px-4 py-1 rounded-full text-xs font-extrabold tracking-widest uppercase">
+            <span className="inline-block bg-orange-500/20 backdrop-blur-md border border-orange-400/40 text-orange-300 px-4 py-1 rounded-full text-xs font-extrabold tracking-widest uppercase">
               OUR ECO-PHILOSOPHY
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black uppercase">
+            <h2 className="text-3xl sm:text-4xl font-black uppercase drop-shadow">
               WHY <span className="text-orange-400">SHARM GO GREEN?</span>
             </h2>
-            <p className="text-emerald-100/85 leading-relaxed text-base sm:text-lg">
+            <p className="text-emerald-50/90 leading-relaxed text-base sm:text-lg">
               We combine the thrill of Sinai desert safaris and Red Sea snorkeling with sustainable, eco-conscious equipment. Every experience respects Sharm El Sheikh’s delicate marine reefs and desert wildlife.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-7 space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
+            <div className="bg-white/10 backdrop-blur-md border border-white/15 hover:border-emerald-400/40 rounded-3xl p-7 space-y-3 shadow-xl transition">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/25 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
                 <Leaf className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-extrabold text-white">100% Eco-Conscious</h3>
-              <p className="text-sm text-emerald-100/75 leading-relaxed">
+              <p className="text-sm text-emerald-50/80 leading-relaxed">
                 Zero-emission Electra e-bikes, wind-powered Kite Trikes, and zero-trace desert camps designed to protect Sinai’s nature.
               </p>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-7 space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-orange-500/20 border border-orange-400/30 flex items-center justify-center text-orange-300">
+            <div className="bg-white/10 backdrop-blur-md border border-white/15 hover:border-orange-400/40 rounded-3xl p-7 space-y-3 shadow-xl transition">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/25 border border-orange-400/30 flex items-center justify-center text-orange-300">
                 <Award className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-extrabold text-white">Certified Local Guides</h3>
-              <p className="text-sm text-emerald-100/75 leading-relaxed">
+              <p className="text-sm text-emerald-50/80 leading-relaxed">
                 Experienced Bedouin desert trackers and certified Red Sea marine instructors ensuring safety and authentic hospitality.
               </p>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-7 space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
+            <div className="bg-white/10 backdrop-blur-md border border-white/15 hover:border-amber-400/40 rounded-3xl p-7 space-y-3 shadow-xl transition">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/25 border border-amber-400/30 flex items-center justify-center text-amber-300">
                 <Sparkles className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-extrabold text-white">Tailored Packages</h3>
-              <p className="text-sm text-emerald-100/75 leading-relaxed">
+              <p className="text-sm text-emerald-50/80 leading-relaxed">
                 Customize solo, couple, or family setups with transparent pricing, instant booking confirmation, and 24/7 WhatsApp support.
               </p>
             </div>
