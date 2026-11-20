@@ -71,9 +71,41 @@ const submissionLimiter = rateLimit({
   message: { error: 'Too many requests submitted. Please wait before trying again.' }
 });
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB Atlas successfully!'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err.message));
+// ================= MONGODB SERVERLESS CONNECTION =================
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectDB() {
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGO_URI, {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 10000
+    }).then((m) => {
+      console.log('✅ Connected to MongoDB Atlas successfully!');
+      return m;
+    });
+  }
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    cached.promise = null;
+    throw err;
+  }
+  return cached.conn;
+}
+
+app.use('/api', async (_req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err.message);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
 
 // Helper: Timing-safe password comparison
 const safeCompare = (input, secret) => {
