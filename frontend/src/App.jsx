@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { API_URL } from './api';
-import { Leaf, MapPin, Clock, ChevronDown, Compass, ShieldCheck, Lock, X, Star, User, Calendar, LogOut, CheckCircle } from 'lucide-react';
+import { MapPin, Clock, ChevronDown, Compass, ShieldCheck, Lock, X, Star, User, Calendar, LogOut, CheckCircle } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
 import ActivityDetails from './ActivityDetails';
 
@@ -191,11 +191,13 @@ export default function App() {
       {/* Navbar */}
       <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <a href="#" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-11 h-11 rounded-full bg-green-600 flex items-center justify-center text-white shadow-md">
-              <Leaf className="w-6 h-6" />
-            </div>
-            <div>
+          <a href="#" className="flex items-center gap-3 shrink-0">
+            <img
+              src="/logo.png"
+              alt="Sharm Go Green Logo"
+              className="h-14 w-auto object-contain"
+            />
+            <div className="hidden sm:block">
               <span className="font-extrabold text-xl text-green-700 block leading-none">SHARM GO GREEN</span>
               <span className="text-[11px] font-semibold text-orange-500 tracking-wider">ECO SAFARI & WATERSPORTS</span>
             </div>
@@ -306,13 +308,13 @@ export default function App() {
 
           <div className="grid grid-cols-2 gap-4">
             <img
-              src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80"
-              alt="Kayaking"
+              src="/hero-sea.jpeg"
+              alt="Red Sea Stargazing & Beach"
               className="rounded-3xl h-56 w-full object-cover shadow-xl border-4 border-white/15"
             />
             <img
-              src="https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?auto=format&fit=crop&w=600&q=80"
-              alt="Horses"
+              src="/hero-desert.jpg"
+              alt="Sinai Desert Camel Safari"
               className="rounded-3xl h-56 w-full object-cover shadow-xl border-4 border-white/15 mt-6"
             />
           </div>
@@ -471,7 +473,7 @@ export default function App() {
 
       {/* Floating WhatsApp Contact Button */}
       <a
-        href="https://wa.me/201000000000?text=Hello%20Sharm%20Go%20Green!%20I%20would%20like%20to%20inquire%20about%20an%20eco-activity."
+        href="https://wa.me/201092886872?text=Hello%20Sharm%20Go%20Green!%20I%20would%20like%20to%20inquire%20about%20an%20eco-activity."
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
