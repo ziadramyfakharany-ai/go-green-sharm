@@ -1,8 +1,57 @@
 import { useEffect, useState } from 'react';
 import { API_URL } from './api';
-import { MapPin, Clock, ChevronDown, Compass, ShieldCheck, Lock, X, Star, User, Calendar, LogOut, CheckCircle } from 'lucide-react';
+import {
+  MapPin,
+  Clock,
+  ChevronDown,
+  Compass,
+  ShieldCheck,
+  Lock,
+  X,
+  Star,
+  User,
+  Calendar,
+  LogOut,
+  CheckCircle,
+  ArrowLeft,
+  ArrowRight
+} from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
 import ActivityDetails from './ActivityDetails';
+
+const HERO_SLIDES = [
+  {
+    id: 1,
+    badge: 'RED SEA MARINE PARADISE',
+    title: 'LAND OF EXQUISITE NATURE',
+    description:
+      'Discover vibrant coral reefs, crystal-clear turquoise lagoons, and eco-friendly kayaking & sunset beach BBQs in Sharm El Sheikh.',
+    image: '/hero-sea.jpeg',
+    ctaText: 'Explore Water Tours',
+    filterTarget: 'Water Sports'
+  },
+  {
+    id: 2,
+    badge: '100% ZERO-EMISSION SAFARI',
+    title: 'GOLDEN SINAI DESERT TRAILS',
+    description:
+      'Ride Arabian horses and camels, carve golden sand dunes, and stargaze under the Milky Way in our zero-trace Bedouin eco-camps.',
+    image: '/hero-desert.jpg',
+    ctaText: 'Explore Desert Safari',
+    filterTarget: 'Safari & Desert'
+  },
+  {
+    id: 3,
+    badge: 'SUSTAINABLE SHARM ADVENTURES',
+    title: 'ECO RIDES & WIND THRILLS',
+    description:
+      'Glide across Sharm’s coastal palm boulevards on Electra cruiser e-bikes or harness pure desert wind on a zero-emission Kite Trike.',
+    image: '/activities/electra-bicycles.jpg',
+    fallbackImage: '/hero-sea.jpeg',
+    ctaText: 'View All Activities',
+    filterTarget: 'All'
+  }
+];
 
 export default function App() {
   const [adminMode, setAdminMode] = useState(false);
@@ -10,6 +59,10 @@ export default function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
+
+  // Hero Slider & Navbar Scroll States
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // User Account States
   const [userToken, setUserToken] = useState(() => localStorage.getItem('userToken') || '');
@@ -56,6 +109,27 @@ export default function App() {
   useEffect(() => {
     fetchActivities();
   }, []);
+
+  // Auto-advance Hero Slides every 6 seconds
+  useEffect(() => {
+    if (adminMode || activeActivity) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [adminMode, activeActivity]);
+
+  // Detect scroll to switch Navbar from Transparent to Solid White
+  useEffect(() => {
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 60);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
 
   const handleUserAuth = async (e) => {
     e.preventDefault();
@@ -162,6 +236,8 @@ export default function App() {
   const categories = ['All', 'Safari & Desert', 'Water Sports', 'Eco Rides'];
   const filtered = filter === 'All' ? activities : activities.filter((a) => a.category === filter);
 
+  const activeHero = HERO_SLIDES[currentSlide];
+
   if (adminMode && adminToken) {
     return (
       <AdminDashboard
@@ -188,33 +264,59 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-slate-800 font-sans">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      {/* Transparent-to-White Sticky Navbar */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          isScrolled
+            ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100 py-3'
+            : 'bg-gradient-to-b from-black/65 via-black/30 to-transparent py-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-4">
           <a href="#" className="flex items-center gap-3 shrink-0">
             <img
               src="/logo.png"
               alt="Sharm Go Green Logo"
-              className="h-14 w-auto object-contain"
+              className={`h-13 sm:h-14 w-auto object-contain transition ${
+                isScrolled ? '' : 'drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]'
+              }`}
             />
             <div className="hidden sm:block">
-              <span className="font-extrabold text-xl text-green-700 block leading-none">SHARM GO GREEN</span>
-              <span className="text-[11px] font-semibold text-orange-500 tracking-wider">ECO SAFARI & WATERSPORTS</span>
+              <span
+                className={`font-extrabold text-xl block leading-none transition ${
+                  isScrolled ? 'text-green-700' : 'text-white'
+                }`}
+              >
+                SHARM GO GREEN
+              </span>
+              <span
+                className={`text-[11px] font-semibold tracking-wider transition ${
+                  isScrolled ? 'text-orange-500' : 'text-orange-300'
+                }`}
+              >
+                ECO SAFARI & WATERSPORTS
+              </span>
             </div>
           </a>
 
-          <div className="hidden lg:flex items-center gap-7 font-bold text-sm text-green-700">
-            <a href="#" className="hover:text-orange-500 transition">HOME</a>
+          <div
+            className={`hidden lg:flex items-center gap-7 font-bold text-sm transition ${
+              isScrolled ? 'text-green-700' : 'text-white'
+            }`}
+          >
+            <a href="#" className="hover:text-orange-400 transition">
+              HOME
+            </a>
             <div
               className="relative"
               onMouseEnter={() => setDropdownOpen(true)}
               onMouseLeave={() => setDropdownOpen(false)}
             >
-              <button className="flex items-center gap-1 hover:text-orange-500 transition py-2 cursor-pointer">
+              <button className="flex items-center gap-1 hover:text-orange-400 transition py-2 cursor-pointer">
                 ACTIVITIES <ChevronDown className="w-4 h-4" />
               </button>
               {dropdownOpen && activities.length > 0 && (
-                <div className="absolute left-0 top-full w-64 bg-neutral-900 text-white rounded-xl shadow-2xl py-2 z-50">
+                <div className="absolute left-0 top-full w-64 bg-neutral-900/95 backdrop-blur-md text-white rounded-xl shadow-2xl py-2 z-50 border border-white/10">
                   {activities.map((act) => (
                     <button
                       key={act._id}
@@ -232,8 +334,12 @@ export default function App() {
                 </div>
               )}
             </div>
-            <a href="#about" className="hover:text-orange-500 transition">ABOUT US</a>
-            <a href="#contact" className="hover:text-orange-500 transition">CONTACT US</a>
+            <a href="#about" className="hover:text-orange-400 transition">
+              ABOUT US
+            </a>
+            <a href="#contact" className="hover:text-orange-400 transition">
+              CONTACT US
+            </a>
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -241,15 +347,23 @@ export default function App() {
               <>
                 <button
                   onClick={openMyBookings}
-                  className="flex items-center gap-1.5 text-xs font-bold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 px-3.5 py-2.5 rounded-full transition cursor-pointer"
+                  className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2.5 rounded-full transition cursor-pointer ${
+                    isScrolled
+                      ? 'text-green-800 bg-green-50 hover:bg-green-100 border border-green-200'
+                      : 'text-white bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30'
+                  }`}
                 >
-                  <User className="w-4 h-4 text-green-700" />
+                  <User className="w-4 h-4" />
                   <span className="hidden sm:inline">{currentUser.name.split(' ')[0]} •</span> My Bookings
                 </button>
                 <button
                   onClick={handleUserLogout}
                   title="Logout"
-                  className="p-2.5 text-slate-500 hover:text-red-600 bg-slate-100 rounded-full transition cursor-pointer"
+                  className={`p-2.5 rounded-full transition cursor-pointer ${
+                    isScrolled
+                      ? 'text-slate-500 hover:text-red-600 bg-slate-100'
+                      : 'text-white/80 hover:text-white bg-white/15 backdrop-blur-md'
+                  }`}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -261,7 +375,11 @@ export default function App() {
                   setAuthError('');
                   setShowAuthModal(true);
                 }}
-                className="flex items-center gap-1.5 text-xs font-bold text-green-700 hover:bg-green-50 border border-green-600 px-4 py-2.5 rounded-full transition cursor-pointer"
+                className={`flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-full transition cursor-pointer ${
+                  isScrolled
+                    ? 'text-green-700 hover:bg-green-50 border border-green-600'
+                    : 'text-white hover:bg-white/15 border border-white/40 backdrop-blur-sm'
+                }`}
               >
                 <User className="w-4 h-4" /> Login / Sign Up
               </button>
@@ -269,13 +387,17 @@ export default function App() {
 
             <button
               onClick={handleAdminClick}
-              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-green-700 bg-slate-100 px-3.5 py-2.5 rounded-full transition cursor-pointer"
+              className={`hidden sm:flex items-center gap-1.5 text-xs font-bold px-3.5 py-2.5 rounded-full transition cursor-pointer ${
+                isScrolled
+                  ? 'text-slate-600 hover:text-green-700 bg-slate-100'
+                  : 'text-white/90 hover:text-white bg-white/15 hover:bg-white/25 backdrop-blur-sm'
+              }`}
             >
-              <ShieldCheck className="w-4 h-4 text-green-700" /> ADMIN
+              <ShieldCheck className="w-4 h-4 text-orange-400" /> ADMIN
             </button>
             <a
               href="#activities"
-              className="bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-md transition"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-lg transition"
             >
               BOOK NOW ↗
             </a>
@@ -283,41 +405,141 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <header className="relative bg-gradient-to-r from-green-900 via-green-800 to-emerald-900 text-white py-20 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <span className="inline-block bg-orange-500/20 border border-orange-400/40 text-orange-300 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase">
-              100% Eco-Friendly Adventures in Sharm El Sheikh
-            </span>
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
-              Unforgettable Desert & Red Sea <span className="text-orange-400">Adventures</span>
-            </h1>
-            <p className="text-green-100 text-lg leading-relaxed">
-              Book zero-emission Electra Bicycles, Kite Trike safaris, Red Sea Kayaking, Sandboarding, and Sunset Beach BBQs directly with Sharm’s premier eco-activity hub.
-            </p>
-            <div className="flex flex-wrap gap-4 pt-2">
-              <a href="#activities" className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-full shadow-lg transition">
-                Explore Activities
-              </a>
-              <a href="#contact" className="bg-white/10 hover:bg-white/20 text-white font-bold px-8 py-4 rounded-full transition">
-                Our Location
-              </a>
+      {/* Full-Screen Interactive Hero Slider */}
+      <header className="relative h-screen min-h-[660px] max-h-[960px] w-full overflow-hidden bg-slate-950 text-white flex items-center">
+        {/* Background Slides with Smooth Crossfade & Subtle Zoom */}
+        {HERO_SLIDES.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-all duration-1000 ease-out ${
+              index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
+            }`}
+          >
+            <img
+              src={slide.image}
+              onError={(e) => {
+                if (slide.fallbackImage && e.currentTarget.src !== slide.fallbackImage) {
+                  e.currentTarget.src = slide.fallbackImage;
+                }
+              }}
+              alt={slide.title}
+              className="w-full h-full object-cover object-center"
+            />
+            {/* Cinematic Dark Gradient Overlay for Text Contrast */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/25" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+          </div>
+        ))}
+
+        {/* Main Hero Content Container */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-16">
+          <div className="grid lg:grid-cols-12 gap-8 items-center">
+            {/* Left Vertical Step Indicator (1 - 2 - 3) */}
+            <div className="hidden md:flex lg:col-span-1 flex-col items-center justify-center gap-5">
+              <div className="w-px h-14 bg-white/30" />
+              {HERO_SLIDES.map((slide, idx) => {
+                const active = idx === currentSlide;
+                return (
+                  <button
+                    key={slide.id}
+                    onClick={() => setCurrentSlide(idx)}
+                    aria-label={`Slide ${idx + 1}`}
+                    className={`transition-all duration-300 flex items-center justify-center cursor-pointer ${
+                      active
+                        ? 'w-9 h-9 rounded-full bg-white text-slate-900 font-extrabold text-sm shadow-lg scale-110'
+                        : 'w-3 h-3 rounded-full bg-white/50 hover:bg-white text-[0px]'
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                );
+              })}
+              <div className="w-px h-14 bg-white/30" />
+            </div>
+
+            {/* Center-Left Slide Text & CTA */}
+            <div className="lg:col-span-6 space-y-5">
+              <span className="inline-block bg-orange-500/25 backdrop-blur-sm border border-orange-400/50 text-orange-300 px-4 py-1.5 rounded-full text-xs font-extrabold tracking-widest uppercase">
+                {activeHero.badge}
+              </span>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] uppercase drop-shadow-md">
+                {activeHero.title}
+              </h1>
+
+              <p className="text-slate-100/90 text-base sm:text-lg max-w-xl leading-relaxed font-normal">
+                {activeHero.description}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                <a
+                  href="#activities"
+                  onClick={() => setFilter(activeHero.filterTarget)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm px-7 py-3.5 rounded-lg shadow-xl transition transform hover:-translate-y-0.5"
+                >
+                  {activeHero.ctaText}
+                </a>
+                <a
+                  href="#contact"
+                  className="bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white font-bold text-sm px-6 py-3.5 rounded-lg transition"
+                >
+                  Our Location
+                </a>
+              </div>
+            </div>
+
+            {/* Right Interactive Preview Cards */}
+            <div className="hidden lg:flex lg:col-span-5 items-center justify-end gap-5">
+              {HERO_SLIDES.map((slide, idx) => {
+                if (idx === currentSlide) return null;
+                return (
+                  <button
+                    key={slide.id}
+                    onClick={() => setCurrentSlide(idx)}
+                    className="group relative w-48 h-64 rounded-3xl overflow-hidden border-2 border-white/25 hover:border-orange-400 shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer text-left"
+                  >
+                    <img
+                      src={slide.image}
+                      onError={(e) => {
+                        if (slide.fallbackImage && e.currentTarget.src !== slide.fallbackImage) {
+                          e.currentTarget.src = slide.fallbackImage;
+                        }
+                      }}
+                      alt={slide.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <span className="text-[10px] font-bold text-orange-300 uppercase tracking-wider block">
+                        0{slide.id}
+                      </span>
+                      <p className="text-white font-extrabold text-sm leading-snug line-clamp-2">
+                        {slide.title}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <img
-              src="/hero-sea.jpeg"
-              alt="Red Sea Stargazing & Beach"
-              className="rounded-3xl h-56 w-full object-cover shadow-xl border-4 border-white/15"
-            />
-            <img
-              src="/hero-desert.jpg"
-              alt="Sinai Desert Camel Safari"
-              className="rounded-3xl h-56 w-full object-cover shadow-xl border-4 border-white/15 mt-6"
-            />
-          </div>
+        {/* Bottom Center Navigation Arrows */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+          <button
+            onClick={prevSlide}
+            aria-label="Previous Slide"
+            className="w-11 h-11 rounded-full bg-white/15 hover:bg-orange-500 backdrop-blur-md border border-white/30 flex items-center justify-center text-white transition cursor-pointer shadow-lg"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={nextSlide}
+            aria-label="Next Slide"
+            className="w-11 h-11 rounded-full bg-white/15 hover:bg-orange-500 backdrop-blur-md border border-white/30 flex items-center justify-center text-white transition cursor-pointer shadow-lg"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </button>
         </div>
       </header>
 
@@ -499,7 +721,10 @@ export default function App() {
             <div className="flex gap-2 bg-slate-100 p-1 rounded-full mb-6">
               <button
                 type="button"
-                onClick={() => { setAuthMode('login'); setAuthError(''); }}
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthError('');
+                }}
                 className={`flex-1 py-2 rounded-full text-xs font-extrabold transition cursor-pointer ${
                   authMode === 'login' ? 'bg-green-700 text-white shadow' : 'text-slate-600'
                 }`}
@@ -508,7 +733,10 @@ export default function App() {
               </button>
               <button
                 type="button"
-                onClick={() => { setAuthMode('register'); setAuthError(''); }}
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthError('');
+                }}
                 className={`flex-1 py-2 rounded-full text-xs font-extrabold transition cursor-pointer ${
                   authMode === 'register' ? 'bg-green-700 text-white shadow' : 'text-slate-600'
                 }`}
@@ -598,16 +826,20 @@ export default function App() {
                   <div key={b._id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <p className="font-extrabold text-green-800">{b.activityName}</p>
-                      <p className="text-xs text-slate-600">{b.selectedOption} • {b.guests} Guest(s)</p>
+                      <p className="text-xs text-slate-600">
+                        {b.selectedOption} • {b.guests} Guest(s)
+                      </p>
                       <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-green-600" /> {b.date}
                       </p>
                     </div>
                     <div className="text-right space-y-1">
                       <p className="font-extrabold text-lg text-slate-800">${b.totalPrice}</p>
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
-                        b.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                          b.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
                         {b.status === 'Confirmed' && <CheckCircle className="w-3.5 h-3.5" />}
                         {b.status}
                       </span>
