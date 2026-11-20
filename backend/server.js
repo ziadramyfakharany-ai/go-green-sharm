@@ -459,8 +459,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Private Campfire & BBQ Kit", price: 15 },
           { name: "Portable Solar Lantern & Powerbank", price: 5 }
         ],
-        image: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
-      },
+        image: "https://go-green-sharm.vercel.app/activities/camping.jpg"      },
       {
         name: "Quadrocycle",
         category: "Safari & Desert",
@@ -477,7 +476,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Safety Helmet (Included)", price: 0 },
           { name: "Dust Goggles & Desert Scarf", price: 5 }
         ],
-        image: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=800&q=80"
+        image: "https://go-green-sharm.vercel.app/activities/quadrocycle.jpg"
       },
       {
         name: "Beach BBQ's",
@@ -496,7 +495,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Mask, Snorkel & Fins Set", price: 5 },
           { name: "Beach Lounger & Umbrella (Included)", price: 0 }
         ],
-        image: "https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=800&q=80"
+        image: "https://go-green-sharm.vercel.app/activities/beach-bbq.jpg"
       },
       {
         name: "Sandboarding",
@@ -514,7 +513,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Pro Sandboard & Boots (Included)", price: 0 },
           { name: "Action Camera Chest Mount", price: 7 }
         ],
-        image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80"
+        image: "https://go-green-sharm.vercel.app/activities/sandboarding.jpg"
       },
       {
         name: "Kayaking",
@@ -534,7 +533,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Waterproof Phone Pouch & Dry Bag", price: 4 },
           { name: "Snorkeling Mask Add-on", price: 5 }
         ],
-        image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80"
+        image: "https://go-green-sharm.vercel.app/activities/kayaking.jpg"
       }
     ];
     const created = await EcoSpot.insertMany(activities);
