@@ -13,48 +13,12 @@ import {
   Calendar,
   LogOut,
   CheckCircle,
-  ArrowLeft,
-  ArrowRight,
   Leaf,
   Award,
   Sparkles
 } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
 import ActivityDetails from './ActivityDetails';
-
-const HERO_SLIDES = [
-  {
-    id: 1,
-    badge: 'RED SEA MARINE PARADISE',
-    title: 'LAND OF EXQUISITE NATURE',
-    description:
-      'Discover vibrant coral reefs, crystal-clear turquoise lagoons, and eco-friendly kayaking & sunset beach BBQs in Sharm El Sheikh.',
-    image: '/hero-sea.jpeg',
-    ctaText: 'Explore Water Tours',
-    filterTarget: 'Water Sports'
-  },
-  {
-    id: 2,
-    badge: '100% ZERO-EMISSION SAFARI',
-    title: 'GOLDEN SINAI DESERT TRAILS',
-    description:
-      'Ride Arabian horses and camels, carve golden sand dunes, and stargaze under the Milky Way in our zero-trace Bedouin eco-camps.',
-    image: '/hero-desert.jpg',
-    ctaText: 'Explore Desert Safari',
-    filterTarget: 'Safari & Desert'
-  },
-  {
-    id: 3,
-    badge: 'SUSTAINABLE SHARM ADVENTURES',
-    title: 'ECO RIDES & WIND THRILLS',
-    description:
-      'Glide across Sharm’s coastal palm boulevards on Electra cruiser e-bikes or harness pure desert wind on a zero-emission Kite Trike.',
-    image: '/activities/electra-bicycles.jpg',
-    fallbackImage: '/hero-sea.jpeg',
-    ctaText: 'View All Activities',
-    filterTarget: 'All'
-  }
-];
 
 export default function App() {
   const [adminMode, setAdminMode] = useState(false);
@@ -63,8 +27,7 @@ export default function App() {
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  // Hero Slider & Navbar Scroll States
-  const [currentSlide, setCurrentSlide] = useState(0);
+  // Navbar Scroll State
   const [isScrolled, setIsScrolled] = useState(false);
 
   // User Account States
@@ -114,23 +77,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (adminMode || activeActivity) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [adminMode, activeActivity]);
-
-  useEffect(() => {
     const onScroll = () => {
       setIsScrolled(window.scrollY > 60);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
 
   const handleUserAuth = async (e) => {
     e.preventDefault();
@@ -236,8 +188,6 @@ export default function App() {
 
   const categories = ['All', 'Safari & Desert', 'Water Sports', 'Eco Rides'];
   const filtered = filter === 'All' ? activities : activities.filter((a) => a.category === filter);
-
-  const activeHero = HERO_SLIDES[currentSlide];
 
   if (adminMode && adminToken) {
     return (
@@ -432,138 +382,46 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Full-Screen Interactive Hero Slider */}
+      {/* Fixed Desert & Camels Hero Section */}
       <header className="relative h-screen min-h-[660px] max-h-[960px] w-full overflow-hidden bg-emerald-950 text-white flex items-center">
-        {HERO_SLIDES.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-all duration-1000 ease-out ${
-              index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
-            }`}
-          >
-            <img
-              src={slide.image}
-              onError={(e) => {
-                if (slide.fallbackImage && e.currentTarget.src !== slide.fallbackImage) {
-                  e.currentTarget.src = slide.fallbackImage;
-                }
-              }}
-              alt={slide.title}
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25" />
-          </div>
-        ))}
+        <img
+          src="/hero-desert.jpg"
+          alt="Golden Sinai Desert Trails - Sharm Go Green"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-16">
-          <div className="grid lg:grid-cols-12 gap-8 items-center">
-            {/* Left Vertical Step Indicator */}
-            <div className="hidden md:flex lg:col-span-1 flex-col items-center justify-center gap-5">
-              <div className="w-px h-14 bg-white/35" />
-              {HERO_SLIDES.map((slide, idx) => {
-                const active = idx === currentSlide;
-                return (
-                  <button
-                    key={slide.id}
-                    onClick={() => setCurrentSlide(idx)}
-                    aria-label={`Slide ${idx + 1}`}
-                    className={`transition-all duration-300 flex items-center justify-center cursor-pointer ${
-                      active
-                        ? 'w-9 h-9 rounded-full bg-white text-emerald-950 font-extrabold text-sm shadow-lg scale-110'
-                        : 'w-3 h-3 rounded-full bg-white/50 hover:bg-white text-[0px]'
-                    }`}
-                  >
-                    {idx + 1}
-                  </button>
-                );
-              })}
-              <div className="w-px h-14 bg-white/35" />
-            </div>
+          <div className="max-w-2xl space-y-6">
+            <span className="inline-block bg-orange-500/25 backdrop-blur-sm border border-orange-400/50 text-orange-200 px-4 py-1.5 rounded-full text-xs font-extrabold tracking-widest uppercase">
+              100% ZERO-EMISSION SAFARI &amp; ECO ADVENTURES
+            </span>
 
-            {/* Center-Left Slide Text & CTA */}
-            <div className="lg:col-span-6 space-y-5">
-              <span className="inline-block bg-orange-500/25 backdrop-blur-sm border border-orange-400/50 text-orange-200 px-4 py-1.5 rounded-full text-xs font-extrabold tracking-widest uppercase">
-                {activeHero.badge}
-              </span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08] uppercase drop-shadow-md">
+              GOLDEN SINAI DESERT TRAILS
+            </h1>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08] uppercase drop-shadow-md">
-                {activeHero.title}
-              </h1>
+            <p className="text-white/90 text-base sm:text-lg max-w-xl leading-relaxed font-normal">
+              Ride Arabian horses and camels, carve golden sand dunes, and stargaze under the Milky Way in our zero-trace Bedouin eco-camps &amp; Red Sea tours.
+            </p>
 
-              <p className="text-white/90 text-base sm:text-lg max-w-xl leading-relaxed font-normal">
-                {activeHero.description}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <a
-                  href="#activities"
-                  onClick={() => setFilter(activeHero.filterTarget)}
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm px-7 py-3.5 rounded-full shadow-xl transition transform hover:-translate-y-0.5"
-                >
-                  {activeHero.ctaText}
-                </a>
-                <a
-                  href="#contact"
-                  className="bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/35 text-white font-bold text-sm px-6 py-3.5 rounded-full transition"
-                >
-                  Our Location
-                </a>
-              </div>
-            </div>
-
-            {/* Right Interactive Preview Cards */}
-            <div className="hidden lg:flex lg:col-span-5 items-center justify-end gap-5">
-              {HERO_SLIDES.map((slide, idx) => {
-                if (idx === currentSlide) return null;
-                return (
-                  <button
-                    key={slide.id}
-                    onClick={() => setCurrentSlide(idx)}
-                    className="group relative w-48 h-64 rounded-3xl overflow-hidden border-2 border-white/30 hover:border-orange-400 shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer text-left"
-                  >
-                    <img
-                      src={slide.image}
-                      onError={(e) => {
-                        if (slide.fallbackImage && e.currentTarget.src !== slide.fallbackImage) {
-                          e.currentTarget.src = slide.fallbackImage;
-                        }
-                      }}
-                      alt={slide.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <span className="text-[10px] font-bold text-orange-300 uppercase tracking-wider block">
-                        0{slide.id}
-                      </span>
-                      <p className="text-white font-extrabold text-sm leading-snug line-clamp-2">
-                        {slide.title}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <a
+                href="#activities"
+                onClick={() => setFilter('All')}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-sm px-7 py-3.5 rounded-full shadow-xl transition transform hover:-translate-y-0.5"
+              >
+                Explore Activities
+              </a>
+              <a
+                href="#contact"
+                className="bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/35 text-white font-bold text-sm px-6 py-3.5 rounded-full transition"
+              >
+                Our Location
+              </a>
             </div>
           </div>
-        </div>
-
-        {/* Bottom Center Navigation Arrows */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
-          <button
-            onClick={prevSlide}
-            aria-label="Previous Slide"
-            className="w-11 h-11 rounded-full bg-white/15 hover:bg-orange-500 backdrop-blur-md border border-white/30 flex items-center justify-center text-white transition cursor-pointer shadow-lg"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={nextSlide}
-            aria-label="Next Slide"
-            className="w-11 h-11 rounded-full bg-white/15 hover:bg-orange-500 backdrop-blur-md border border-white/30 flex items-center justify-center text-white transition cursor-pointer shadow-lg"
-          >
-            <ArrowRight className="w-5 h-5" />
-          </button>
         </div>
       </header>
 
