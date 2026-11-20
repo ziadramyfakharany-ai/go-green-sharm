@@ -403,8 +403,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Full Harness, Helmet & Goggles (Included)", price: 0 },
           { name: "Desert Scarf (Shemagh)", price: 5 }
         ],
-        image: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=800&q=80"
-      },
+        image: "https://go-green-sharm.vercel.app/activities/kite-trike.jpg"      },
       {
         name: "Photo Sessions",
         category: "Eco Rides",
@@ -422,8 +421,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Traditional Bedouin Outfit Prop", price: 5 },
           { name: "Horse / Camel Prop Pose", price: 15 }
         ],
-        image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80"
-      },
+        image: "https://go-green-sharm.vercel.app/activities/photo-sessions.jpg"      },
       {
         name: "Horses and Camels",
         category: "Safari & Desert",
@@ -441,8 +439,7 @@ app.post('/api/seed', verifyAdmin, async (_req, res) => {
           { name: "Riding Helmet (Free)", price: 0 },
           { name: "Private Bedouin Guide", price: 15 }
         ],
-        image: "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?auto=format&fit=crop&w=800&q=80"
-      },
+        image: "https://go-green-sharm.vercel.app/activities/horses-camels.jpg"      },
       {
         name: "Camping",
         category: "Safari & Desert",
